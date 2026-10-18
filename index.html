@@ -387,12 +387,8 @@
       { name: "Spotify", icon: "🎵", desc: "Music Player", url: "spotify://", fallback: "https://open.spotify.com" },
       { name: "Camera", icon: "📷", desc: "Quick Lens", url: "intent:#Intent;action=android.media.action.STILL_IMAGE_CAMERA;end" },
       { name: "Timer", icon: "⏱️", desc: "Timer & Clock", url: "intent:#Intent;action=android.intent.action.SET_TIMER;end" },
-      // { name: "LINE", icon: "💬", desc: "Messages", url: "https://line.me/R/nv/chat" },
-      // { name: "LINE", icon: "💬", desc: "Messages", url: "intent://#Intent;package=jp.naver.line.android;scheme=line;end" },
-      // { name: "LINE", icon: "💬", desc: "Messages", url: "intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=jp.naver.line.android;end" },
-      // { name: "LINE", icon: "💬", desc: "Messages", url: "line://nv/chat" },
-      // { name: "LINE", icon: "💬", desc: "Messages", url: "https://line.me/R/msg/text/?" },
-      { name: "LINE", icon: "💬", desc: "Messages", url: "intent:#Intent;action=android.intent.action.VIEW;data=https://line.me/R/nv/chat;package=jp.naver.line.android;end" },
+      // { name: "LINE", icon: "💬", desc: "Messages", url: "intent:#Intent;action=android.intent.action.VIEW;data=https://line.me/R/nv/chat;package=jp.naver.line.android;end" },
+      { name: "LINE", icon: "💬", desc: "Messages", url: "intent://nv/chat#Intent;scheme=line;action=android.intent.action.VIEW;end" },
       // { name: "LINE", icon: "💬", desc: "Messages", url: "intent://line/#Intent;scheme=line;package=jp.naver.line.android;end" },
       // { name: "LINE", icon: "💬", desc: "Messages", url: "https://line.me/R/" },
       { name: "Maps", icon: "🗺️", desc: "Navigation", url: "intent:#Intent;action=android.intent.action.VIEW;data=geo:0,0;end" },
@@ -509,7 +505,6 @@
       if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
       if (!app.url) return;
 
-      // intentスキームを直接実行してOS側へ引き渡す
       window.location.href = app.url;
     });
   </script>
