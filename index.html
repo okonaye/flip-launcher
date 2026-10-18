@@ -499,12 +499,20 @@
     vinyl.addEventListener('pointerdown', onStart);
 
     // スピーカーカードをタップでアプリ起動
+    // speakerCard.addEventListener('click', () => {
+    //   const app = APPS[activeIndex];
+    //   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    //   window.location.href = app.url;
+    //   if (app.fallback) {
+    //     setTimeout(() => { window.location.href = app.fallback; }, 800);
+    //   }
     speakerCard.addEventListener('click', () => {
       const app = APPS[activeIndex];
       if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-      window.location.href = app.url;
-      if (app.fallback) {
-        setTimeout(() => { window.location.href = app.fallback; }, 800);
+      
+      if (app.url) {
+        // インテントまたはアプリURIをダイレクト起動
+        window.location.href = app.url;
       }
     });
   </script>
