@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Flip Vinyl Launcher Pro</title>
+  <title>Flip Vinyl Speaker Edition</title>
   <link rel="manifest" href="manifest.json">
   <style>
     :root {
-      --bg: #0f0f11;
-      --card-bg: rgba(255, 255, 255, 0.06);
+      --bg: #0c0c0e;
+      --speaker-frame: #18181b;
+      --speaker-grille: #222227;
       --border: rgba(255, 255, 255, 0.12);
       --text-main: #f5f5f7;
-      --text-sub: #8e8e93;
-      --accent: #ff453a;
-      --accent-blue: #0a84ff;
+      --text-sub: #a1a1aa;
+      --accent-red: #ef4444;
+      --metallic: linear-gradient(135deg, #e4e4e7 0%, #71717a 50%, #d4d4d8 100%);
     }
     * {
       box-sizing: border-box;
@@ -32,362 +33,390 @@
       position: relative;
     }
 
-    /* 左上：メイン表示＆ミニツールコンテナ */
-    .hero-container {
+    /* -----------------------------------------------
+       左上：リアルなスタジオ・スピーカー風エンクロージャー
+    ----------------------------------------------- */
+    .speaker-box {
       position: absolute;
       top: 14px;
       left: 14px;
-      width: 175px;
-      z-index: 30;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    /* メインアプリカード */
-    .hero-app-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 14px 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      width: 195px;
+      background: linear-gradient(145deg, #1f1f23 0%, #111113 100%);
+      border: 2px solid #2e2e33;
+      border-radius: 22px;
+      padding: 14px 14px 12px 14px;
+      box-shadow: 
+        0 18px 38px rgba(0, 0, 0, 0.85),
+        inset 0 1px 1px rgba(255, 255, 255, 0.15),
+        inset 0 0 16px rgba(0, 0, 0, 0.8);
       cursor: pointer;
-      transition: transform 0.12s ease, background 0.2s ease;
+      z-index: 30;
+      transition: transform 0.1s ease, filter 0.15s ease;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      gap: 10px;
     }
-    .hero-app-card:active {
+    .speaker-box:active {
       transform: scale(0.96);
-      background: rgba(255, 255, 255, 0.12);
+      filter: brightness(1.1);
     }
-    .hero-top-row {
+    /* スピーカーキャビネットの四隅ネジ */
+    .screw {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, #71717a 40%, #27272a 100%);
+      border-radius: 50%;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.4);
+    }
+    .screw.tl { top: 6px; left: 6px; }
+    .screw.tr { top: 6px; right: 6px; }
+    .screw.bl { bottom: 6px; left: 6px; }
+    .screw.br { bottom: 6px; right: 6px; }
+
+    /* ウーファーコーン / スピーカーグリル */
+    .woofer-rim {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #18181b 0%, #27272a 75%, #3f3f46 100%);
+      border: 3px solid #141416;
+      box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.7),
+        inset 0 4px 10px rgba(0, 0, 0, 0.9),
+        inset 0 0 0 2px rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      position: relative;
+    }
+    /* スピーカーメッシュのドットパターン */
+    .woofer-rim::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+      background-size: 4px 4px;
+      opacity: 0.6;
+      pointer-events: none;
     }
     .hero-icon {
-      font-size: 46px;
+      font-size: 52px;
       line-height: 1;
-      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+      filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.8));
+      z-index: 2;
+      transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .side-badge {
-      font-size: 9px;
-      font-family: monospace;
-      padding: 3px 6px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid var(--border);
-      color: var(--text-sub);
-    }
-    .hero-meta {
+
+    /* アプリ銘板プレート */
+    .speaker-label-plate {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 6px 10px;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      text-align: center;
     }
     .hero-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
+      letter-spacing: -0.2px;
+      color: #fff;
+      max-width: 150px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .hero-desc {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-sub);
       font-weight: 500;
+      margin-top: 1px;
     }
-    .hero-action {
+    .action-led {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      font-size: 10px;
+      gap: 5px;
+      font-size: 9px;
       font-family: monospace;
-      color: var(--accent);
-      font-weight: 600;
+      color: var(--accent-red);
+      font-weight: 700;
       margin-top: 4px;
+      letter-spacing: 0.8px;
+    }
+    .led-dot {
+      width: 5px;
+      height: 5px;
+      background: var(--accent-red);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--accent-red);
+      animation: pulse 1.6s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
     }
 
-    /* カバー画面内ミニツール（電卓・タイマーなど即時操作用） */
-    .mini-tool-panel {
-      display: none;
-      background: var(--card-bg);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 10px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    }
-    .mini-tool-panel.active {
-      display: block;
-    }
-    .calc-screen {
-      font-family: monospace;
-      font-size: 18px;
-      text-align: right;
-      padding: 4px 8px;
-      background: rgba(0,0,0,0.4);
-      border-radius: 8px;
-      margin-bottom: 6px;
-      min-height: 28px;
-    }
-    .calc-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 4px;
-    }
-    .calc-btn {
-      background: rgba(255,255,255,0.08);
-      border: none;
-      color: var(--text-main);
-      padding: 6px 0;
-      font-size: 12px;
-      font-weight: 600;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .calc-btn:active {
-      background: rgba(255,255,255,0.2);
-    }
-
-    /* 右下：巨大レコード盤コンテナ */
+    /* -----------------------------------------------
+       右下：超巨大レコード盤（直径420px）
+    ----------------------------------------------- */
     .deck-container {
       position: absolute;
-      bottom: -70px;
-      right: -70px;
-      width: 350px;
-      height: 350px;
+      bottom: -110px;
+      right: -110px;
+      width: 420px;
+      height: 420px;
       touch-action: none;
       z-index: 10;
     }
 
-    /* 針（トーンアーム） */
-    .stylus-needle {
-      position: absolute;
-      top: -10px;
-      left: 75px;
-      width: 4px;
-      height: 42px;
-      background: linear-gradient(180deg, #d1d1d6 0%, var(--accent) 80%);
-      border-radius: 2px;
-      z-index: 25;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.8);
-      pointer-events: none;
-    }
-    .stylus-needle::after {
-      content: "";
-      position: absolute;
-      bottom: -6px;
-      left: -3px;
-      width: 10px;
-      height: 10px;
-      background: var(--accent);
-      border-radius: 50%;
-      box-shadow: 0 0 10px var(--accent);
-    }
-
-    /* レコード盤 */
     .vinyl {
       width: 100%;
       height: 100%;
       border-radius: 50%;
       background:
+        /* アナログレコード特有のコーン状光沢ハイライト（2方向） */
         conic-gradient(
-          from 45deg,
-          rgba(255, 255, 255, 0.08) 0deg,
-          transparent 60deg,
-          rgba(255, 255, 255, 0.12) 120deg,
-          transparent 180deg,
-          rgba(255, 255, 255, 0.08) 240deg,
-          transparent 300deg,
-          rgba(255, 255, 255, 0.12) 360deg
+          from 25deg,
+          rgba(255, 255, 255, 0.05) 0deg,
+          transparent 45deg,
+          rgba(255, 255, 255, 0.14) 105deg,
+          transparent 165deg,
+          rgba(255, 255, 255, 0.05) 215deg,
+          transparent 255deg,
+          rgba(255, 255, 255, 0.14) 315deg,
+          transparent 360deg
         ),
+        /* 超微細な音溝（グルーヴ） */
         repeating-radial-gradient(
           circle at center,
-          #111111 0px,
-          #111111 2px,
-          #191919 3px,
-          #141414 4px
+          #0e0e10 0px,
+          #0e0e10 2px,
+          #18181b 3px,
+          #121214 4px
         );
       box-shadow: 
-        0 14px 45px rgba(0, 0, 0, 0.95),
-        inset 0 0 15px rgba(0, 0, 0, 0.95),
-        inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+        0 20px 60px rgba(0, 0, 0, 0.98),
+        inset 0 0 25px rgba(0, 0, 0, 0.95),
+        inset 0 0 0 3px rgba(255, 255, 255, 0.08);
       position: relative;
       cursor: grab;
-      transition: transform 0.08s ease-out;
     }
     .vinyl:active {
       cursor: grabbing;
     }
 
-    /* センターラベル（タップでA/B面切り替え） */
+    /* センターメタルスピンドル */
     .center-label {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 116px;
-      height: 116px;
+      width: 125px;
+      height: 125px;
       border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #2c2c2e 0%, #1c1c1e 70%, #0c0c0e 100%);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.1), 0 4px 12px rgba(0,0,0,0.6);
+      background: radial-gradient(circle at 35% 35%, #27272a 0%, #18181b 60%, #09090b 100%);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.15), 0 6px 16px rgba(0,0,0,0.7);
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      z-index: 15;
+      pointer-events: none;
+    }
+    .spindle-pin {
+      width: 22px;
+      height: 22px;
+      background: var(--metallic);
+      border-radius: 50%;
+      border: 2px solid #3f3f46;
+      box-shadow: inset 0 1px 3px rgba(255,255,255,0.8), 0 3px 6px rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .spindle-hole {
-      width: 18px;
-      height: 18px;
+      width: 7px;
+      height: 7px;
       background: #000;
-      border: 2px solid #555;
       border-radius: 50%;
-      margin: 4px 0;
-    }
-    .side-text {
-      font-size: 8px;
-      font-family: monospace;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--text-sub);
     }
 
-    /* アイコンスロット */
+    /* レコード上の巨大アプリアイコンスロット */
     .slot {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 44px;
-      height: 44px;
-      margin-left: -22px;
-      margin-top: -22px;
+      width: 52px;
+      height: 52px;
+      margin-left: -26px;
+      margin-top: -26px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 26px;
+      font-size: 32px;
       pointer-events: none;
-      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
+      filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.9));
+    }
+
+    /* -----------------------------------------------
+       リアルなトーンアーム＆レコード針（スタイラス）
+    ----------------------------------------------- */
+    .tonearm-assembly {
+      position: absolute;
+      top: -20px;
+      left: 80px;
+      z-index: 28;
+      pointer-events: none;
+      filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.9));
+    }
+    /* ピボット（アームの回転基軸ベアリング） */
+    .pivot-base {
+      position: absolute;
+      top: -12px;
+      left: 6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--metallic);
+      border: 2px solid #27272a;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.7), 0 4px 8px rgba(0,0,0,0.8);
+    }
+    /* アーム金属パイプ（シルバーメタリック仕上げ） */
+    .arm-pipe {
+      position: absolute;
+      top: 6px;
+      left: 16px;
+      width: 5px;
+      height: 72px;
+      background: linear-gradient(90deg, #a1a1aa 0%, #ffffff 40%, #71717a 100%);
+      border-radius: 2px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+    }
+    /* ヘッドシェル（針の台座） */
+    .headshell {
+      position: absolute;
+      top: 74px;
+      left: 10px;
+      width: 17px;
+      height: 26px;
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 3px 3px 6px 6px;
+      box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 3px;
+    }
+    /* 赤いカートリッジ＆針先（スタイラスチップ） */
+    .cartridge {
+      width: 9px;
+      height: 12px;
+      background: linear-gradient(180deg, var(--accent-red) 0%, #b91c1c 100%);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+      position: relative;
+    }
+    .needle-point {
+      position: absolute;
+      bottom: -6px;
+      left: 3.5px;
+      width: 2px;
+      height: 6px;
+      background: #ffffff;
+      box-shadow: 0 0 5px #fff;
     }
   </style>
 </head>
 <body>
 
-  <!-- 左上：メイン情報 & インラインツール -->
-  <div class="hero-container">
-    <div class="hero-app-card" id="hero-card">
-      <div class="hero-top-row">
-        <div class="hero-icon" id="hero-icon">💬</div>
-        <div class="side-badge" id="side-indicator">SIDE A</div>
-      </div>
-      <div class="hero-meta">
-        <div class="hero-title" id="hero-title">LINE</div>
-        <div class="hero-desc" id="hero-desc">Messages</div>
-        <div class="hero-action" id="hero-action">OPEN APP ➔</div>
-      </div>
+  <!-- 左上：重厚なヴィンテージ・スピーカー型ランチャーカード -->
+  <div class="speaker-box" id="speaker-card">
+    <div class="screw tl"></div>
+    <div class="screw tr"></div>
+    <div class="screw bl"></div>
+    <div class="screw br"></div>
+
+    <div class="woofer-rim">
+      <div class="hero-icon" id="hero-icon">📅</div>
     </div>
 
-    <!-- 即席インライン電卓（Calculator選択時に自動出現） -->
-    <div class="mini-tool-panel" id="inline-calc">
-      <div class="calc-screen" id="calc-val">0</div>
-      <div class="calc-grid">
-        <button class="calc-btn" onclick="calcInput('7')">7</button>
-        <button class="calc-btn" onclick="calcInput('8')">8</button>
-        <button class="calc-btn" onclick="calcInput('9')">9</button>
-        <button class="calc-btn" onclick="calcInput('/')" style="color:var(--accent)">÷</button>
-        <button class="calc-btn" onclick="calcInput('4')">4</button>
-        <button class="calc-btn" onclick="calcInput('5')">5</button>
-        <button class="calc-btn" onclick="calcInput('6')">6</button>
-        <button class="calc-btn" onclick="calcInput('*')" style="color:var(--accent)">×</button>
-        <button class="calc-btn" onclick="calcInput('1')">1</button>
-        <button class="calc-btn" onclick="calcInput('2')">2</button>
-        <button class="calc-btn" onclick="calcInput('3')">3</button>
-        <button class="calc-btn" onclick="calcInput('-')" style="color:var(--accent)">-</button>
-        <button class="calc-btn" onclick="calcClear()" style="color:var(--accent)">C</button>
-        <button class="calc-btn" onclick="calcInput('0')">0</button>
-        <button class="calc-btn" onclick="calcEval()" style="background:var(--accent);color:#fff">=</button>
-        <button class="calc-btn" onclick="calcInput('+')" style="color:var(--accent)">+</button>
+    <div class="speaker-label-plate">
+      <div class="hero-title" id="hero-title">Calendar</div>
+      <div class="hero-desc" id="hero-desc">Today's Schedule</div>
+      <div class="action-led">
+        <span class="led-dot"></span>
+        <span id="action-text">PRESS TO PLAY</span>
       </div>
     </div>
   </div>
 
-  <!-- 右下：レコード盤 -->
+  <!-- 右下：超巨大レコード盤＆リアルなトーンアーム -->
   <div class="deck-container">
-    <div class="stylus-needle"></div>
+    <!-- トーンアーム機構 -->
+    <div class="tonearm-assembly">
+      <div class="pivot-base"></div>
+      <div class="arm-pipe"></div>
+      <div class="headshell">
+        <div class="cartridge">
+          <div class="needle-point"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- レコード盤 -->
     <div class="vinyl" id="vinyl">
-      <!-- センターラベル（タップでSIDE A/Bを切り替え） -->
-      <div class="center-label" id="center-label">
-        <span class="side-text" id="label-top">FLIP</span>
-        <div class="spindle-hole"></div>
-        <span class="side-text" id="label-bottom">SIDE A</span>
+      <div class="center-label">
+        <div class="spindle-pin">
+          <div class="spindle-hole"></div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    // SIDE A: デイリーアプリ / SIDE B: クイックツール・ユーティリティ
-    const SIDES = {
-      A: [
-        { name: "LINE", icon: "💬", desc: "Chats", url: "line://" },
-        { name: "Maps", icon: "🗺️", desc: "Navigation", url: "intent:#Intent;action=android.intent.action.VIEW;data=geo:0,0;end" },
-        { name: "Spotify", icon: "🎵", desc: "Music", url: "spotify://", fallback: "https://open.spotify.com" },
-        { name: "Camera", icon: "📷", desc: "Quick Lens", url: "intent:#Intent;action=android.media.action.STILL_IMAGE_CAMERA;end" },
-        { name: "YouTube", icon: "▶️", desc: "Videos", url: "vnd.youtube://" },
-        { name: "X", icon: "𝕏", desc: "Feed", url: "twitter://" },
-        { name: "Calendar", icon: "📅", desc: "Schedule", url: "content://com.android.calendar/time/" },
-        { name: "Pay", icon: "💳", desc: "Wallet", url: "intent:#Intent;action=android.intent.action.VIEW;data=https://pay.google.com;end" }
-      ],
-      B: [
-        { name: "Calculator", icon: "🔢", desc: "Cover Calc", isMiniTool: true },
-        { name: "Timer", icon: "⏱️", desc: "Clock & Timer", url: "intent:#Intent;action=android.intent.action.SET_TIMER;end" },
-        { name: "Recorder", icon: "🎙️", desc: "Voice Memo", url: "intent:#Intent;action=android.provider.MediaStore.RECORD_SOUND;end" },
-        { name: "Weather", icon: "🌤️", desc: "Forecast", url: "https://weather.google.com" },
-        { name: "Settings", icon: "⚙️", desc: "Config", url: "intent:#Intent;action=android.settings.SETTINGS;end" },
-        { name: "Phone", icon: "📞", desc: "Keypad", url: "tel:" },
-        { name: "Notes", icon: "📝", desc: "Quick Memo", url: "intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_NOTES;end" },
-        { name: "Search", icon: "🔍", desc: "Google Web", url: "https://www.google.com" }
-      ]
-    };
+    const APPS = [
+      { name: "Calendar", icon: "📅", desc: "Schedule", url: "content://com.android.calendar/time/" },
+      { name: "Spotify", icon: "🎵", desc: "Music Player", url: "spotify://", fallback: "https://open.spotify.com" },
+      { name: "Camera", icon: "📷", desc: "Quick Lens", url: "intent:#Intent;action=android.media.action.STILL_IMAGE_CAMERA;end" },
+      { name: "Timer", icon: "⏱️", desc: "Timer & Clock", url: "intent:#Intent;action=android.intent.action.SET_TIMER;end" },
+      { name: "LINE", icon: "💬", desc: "Messages", url: "line://" },
+      { name: "Maps", icon: "🗺️", desc: "Navigation", url: "intent:#Intent;action=android.intent.action.VIEW;data=geo:0,0;end" },
+      { name: "YouTube", icon: "▶️", desc: "Videos", url: "vnd.youtube://" },
+      { name: "Settings", icon: "⚙️", desc: "System Config", url: "intent:#Intent;action=android.settings.SETTINGS;end" }
+    ];
 
-    let currentSide = 'A';
-    let currentApps = SIDES[currentSide];
     const vinyl = document.getElementById('vinyl');
-    const heroCard = document.getElementById('hero-card');
+    const speakerCard = document.getElementById('speaker-card');
     const heroIcon = document.getElementById('hero-icon');
     const heroTitle = document.getElementById('hero-title');
     const heroDesc = document.getElementById('hero-desc');
-    const heroAction = document.getElementById('hero-action');
-    const sideIndicator = document.getElementById('side-indicator');
-    const labelBottom = document.getElementById('label-bottom');
-    const inlineCalc = document.getElementById('inline-calc');
 
-    const radius = 118;
-    const totalSlots = 8;
+    // 拡大したレコードに合わせたアイコン配置半径（142px）
+    const radius = 142;
+    const totalSlots = APPS.length;
     const stepAngle = 360 / totalSlots;
 
-    // スロットの描画更新
-    function renderSlots() {
-      // 既存スロット削除
-      const oldSlots = vinyl.querySelectorAll('.slot');
-      oldSlots.forEach(s => s.remove());
+    // スロット配置
+    APPS.forEach((app, i) => {
+      const angle = (i * stepAngle - 90) * (Math.PI / 180);
+      const x = Math.round(radius * Math.cos(angle));
+      const y = Math.round(radius * Math.sin(angle));
+      const el = document.createElement('div');
+      el.className = 'slot';
+      el.textContent = app.icon;
+      el.style.transform = `translate(${x}px, ${y}px)`;
+      vinyl.appendChild(el);
+    });
 
-      currentApps.forEach((app, i) => {
-        const angle = (i * stepAngle - 90) * (Math.PI / 180);
-        const x = Math.round(radius * Math.cos(angle));
-        const y = Math.round(radius * Math.sin(angle));
-        const el = document.createElement('div');
-        el.className = 'slot';
-        el.textContent = app.icon;
-        el.style.transform = `translate(${x}px, ${y}px)`;
-        vinyl.appendChild(el);
-      });
-    }
-
-    // Web Audio API カチカチ触覚音
+    // Web Audio API によるカチカチ音
     let audioCtx = null;
     function playClick() {
       try {
@@ -396,18 +425,17 @@
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(1600, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.02);
-        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.02);
+        osc.frequency.setValueAtTime(1700, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 0.025);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.025);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.025);
+        osc.stop(audioCtx.currentTime + 0.03);
       } catch (e) {}
     }
 
-    // 回転・スナップ
     let currentAngle = 0;
     let startAngle = 0;
     let baseAngle = 0;
@@ -427,21 +455,17 @@
       let idx = Math.round(norm / stepAngle) % totalSlots;
       if (idx !== activeIndex) {
         activeIndex = idx;
-        const app = currentApps[activeIndex];
+        const app = APPS[activeIndex];
         heroIcon.textContent = app.icon;
         heroTitle.textContent = app.name;
         heroDesc.textContent = app.desc;
 
-        if (app.isMiniTool) {
-          heroAction.textContent = "ACTIVE IN COVER ➔";
-          inlineCalc.classList.add('active');
-        } else {
-          heroAction.textContent = "OPEN APP ➔";
-          inlineCalc.classList.remove('active');
-        }
+        // スピーカーコーンのパルス演出
+        heroIcon.style.transform = 'scale(1.22)';
+        setTimeout(() => { heroIcon.style.transform = 'scale(1)'; }, 140);
 
         playClick();
-        if (navigator.vibrate) navigator.vibrate(8);
+        if (navigator.vibrate) navigator.vibrate(9);
       }
     }
 
@@ -462,6 +486,7 @@
     function onEnd() {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onEnd);
+      // 最近傍のスロットへスナップ
       currentAngle = Math.round(currentAngle / stepAngle) * stepAngle;
       vinyl.style.transition = 'transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1)';
       vinyl.style.transform = `rotate(${currentAngle}deg)`;
@@ -471,63 +496,15 @@
 
     vinyl.addEventListener('pointerdown', onStart);
 
-    // センターラベルタップ：SIDE A / SIDE B の反転切り替え
-    document.getElementById('center-label').addEventListener('click', (e) => {
-      e.stopPropagation();
-      currentSide = currentSide === 'A' ? 'B' : 'A';
-      currentApps = SIDES[currentSide];
-      sideIndicator.textContent = `SIDE ${currentSide}`;
-      labelBottom.textContent = `SIDE ${currentSide}`;
-
-      // フリップアニメーション
-      vinyl.style.transition = 'transform 0.4s ease';
-      currentAngle += 180;
-      vinyl.style.transform = `rotate(${currentAngle}deg) scale(0.92)`;
-      setTimeout(() => {
-        renderSlots();
-        vinyl.style.transform = `rotate(${currentAngle}deg) scale(1)`;
-        updateActiveApp();
-      }, 200);
-      if (navigator.vibrate) navigator.vibrate([15, 50, 15]);
-    });
-
-    // メインカードタップで起動
-    heroCard.addEventListener('click', () => {
-      const app = currentApps[activeIndex];
-      if (app.isMiniTool) return;
+    // スピーカーカードをタップでアプリ起動
+    speakerCard.addEventListener('click', () => {
+      const app = APPS[activeIndex];
       if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
       window.location.href = app.url;
       if (app.fallback) {
         setTimeout(() => { window.location.href = app.fallback; }, 800);
       }
     });
-
-    // カバー画面インライン電卓ロジック
-    let calcExp = "";
-    window.calcInput = function(char) {
-      if (calcExp === "0") calcExp = "";
-      calcExp += char;
-      document.getElementById('calc-val').textContent = calcExp;
-      if (navigator.vibrate) navigator.vibrate(5);
-    };
-    window.calcClear = function() {
-      calcExp = "";
-      document.getElementById('calc-val').textContent = "0";
-    };
-    window.calcEval = function() {
-      try {
-        const res = Function('"use strict";return (' + calcExp + ')')();
-        calcExp = String(res);
-        document.getElementById('calc-val').textContent = calcExp;
-      } catch(e) {
-        document.getElementById('calc-val').textContent = "Err";
-        calcExp = "";
-      }
-      if (navigator.vibrate) navigator.vibrate(10);
-    };
-
-    renderSlots();
-    updateActiveApp();
   </script>
 </body>
 </html>
