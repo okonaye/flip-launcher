@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Flip Vinyl</title>
+  <title>Flip Vinyl Launcher Pro</title>
   <link rel="manifest" href="manifest.json">
   <style>
     :root {
-      --bg: #121212;
-      --card-bg: rgba(255, 255, 255, 0.05);
+      --bg: #0f0f11;
+      --card-bg: rgba(255, 255, 255, 0.06);
       --border: rgba(255, 255, 255, 0.12);
       --text-main: #f5f5f7;
-      --text-sub: #86868b;
-      --accent-red: #ff453a;
+      --text-sub: #8e8e93;
+      --accent: #ff453a;
+      --accent-blue: #0a84ff;
     }
     * {
       box-sizing: border-box;
@@ -31,43 +32,63 @@
       position: relative;
     }
 
-    /* 左上：メインのアクティブアプリ表示カード（タップで起動） */
-    .hero-app-card {
+    /* 左上：メイン表示＆ミニツールコンテナ */
+    .hero-container {
       position: absolute;
-      top: 18px;
-      left: 18px;
+      top: 14px;
+      left: 14px;
+      width: 175px;
+      z-index: 30;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+    }
+
+    /* メインアプリカード */
+    .hero-app-card {
       background: var(--card-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 16px 18px;
-      width: 170px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      padding: 14px 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       cursor: pointer;
-      z-index: 20;
-      transition: transform 0.1s ease, background 0.2s ease;
+      transition: transform 0.12s ease, background 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .hero-app-card:active {
       transform: scale(0.96);
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .hero-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     .hero-icon {
-      font-size: 54px;
+      font-size: 46px;
       line-height: 1;
-      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+    }
+    .side-badge {
+      font-size: 9px;
+      font-family: monospace;
+      padding: 3px 6px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
+      color: var(--text-sub);
     }
     .hero-meta {
       display: flex;
       flex-direction: column;
     }
     .hero-title {
-      font-size: 19px;
+      font-size: 18px;
       font-weight: 700;
-      letter-spacing: -0.3px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -76,7 +97,6 @@
       font-size: 11px;
       color: var(--text-sub);
       font-weight: 500;
-      margin-top: 2px;
     }
     .hero-action {
       display: inline-flex;
@@ -84,31 +104,72 @@
       gap: 4px;
       font-size: 10px;
       font-family: monospace;
-      color: var(--accent-red);
+      color: var(--accent);
       font-weight: 600;
-      margin-top: 6px;
-      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    /* カバー画面内ミニツール（電卓・タイマーなど即時操作用） */
+    .mini-tool-panel {
+      display: none;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .mini-tool-panel.active {
+      display: block;
+    }
+    .calc-screen {
+      font-family: monospace;
+      font-size: 18px;
+      text-align: right;
+      padding: 4px 8px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      min-height: 28px;
+    }
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+    .calc-btn {
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: var(--text-main);
+      padding: 6px 0;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .calc-btn:active {
+      background: rgba(255,255,255,0.2);
     }
 
     /* 右下：巨大レコード盤コンテナ */
     .deck-container {
       position: absolute;
-      bottom: -65px;
-      right: -65px;
-      width: 340px;
-      height: 340px;
+      bottom: -70px;
+      right: -70px;
+      width: 350px;
+      height: 350px;
       touch-action: none;
       z-index: 10;
     }
 
-    /* 針（トーンアーム・インジケーター） */
+    /* 針（トーンアーム） */
     .stylus-needle {
       position: absolute;
-      top: -12px;
-      left: 70px;
+      top: -10px;
+      left: 75px;
       width: 4px;
-      height: 38px;
-      background: linear-gradient(180deg, #d1d1d6 0%, #ff453a 80%);
+      height: 42px;
+      background: linear-gradient(180deg, #d1d1d6 0%, var(--accent) 80%);
       border-radius: 2px;
       z-index: 25;
       box-shadow: 0 4px 12px rgba(0,0,0,0.8);
@@ -121,18 +182,17 @@
       left: -3px;
       width: 10px;
       height: 10px;
-      background: #ff453a;
+      background: var(--accent);
       border-radius: 50%;
-      box-shadow: 0 0 8px #ff453a;
+      box-shadow: 0 0 10px var(--accent);
     }
 
-    /* リアルなビニールレコード盤 */
+    /* レコード盤 */
     .vinyl {
       width: 100%;
       height: 100%;
       border-radius: 50%;
       background:
-        /* 艶やかな光沢反射 */
         conic-gradient(
           from 45deg,
           rgba(255, 255, 255, 0.08) 0deg,
@@ -143,52 +203,61 @@
           transparent 300deg,
           rgba(255, 255, 255, 0.12) 360deg
         ),
-        /* 高精細なレコード溝（グルーヴ） */
         repeating-radial-gradient(
           circle at center,
           #111111 0px,
           #111111 2px,
-          #1a1a1a 3px,
-          #151515 4px
+          #191919 3px,
+          #141414 4px
         );
       box-shadow: 
-        0 14px 40px rgba(0, 0, 0, 0.9),
+        0 14px 45px rgba(0, 0, 0, 0.95),
         inset 0 0 15px rgba(0, 0, 0, 0.95),
         inset 0 0 0 2px rgba(255, 255, 255, 0.08);
       position: relative;
       cursor: grab;
+      transition: transform 0.08s ease-out;
     }
     .vinyl:active {
       cursor: grabbing;
     }
 
-    /* センターラベル（文字なし・メタリックスピンドル） */
+    /* センターラベル（タップでA/B面切り替え） */
     .center-label {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 110px;
-      height: 110px;
+      width: 116px;
+      height: 116px;
       border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #2a2a2e 0%, #1c1c1e 70%, #0e0e10 100%);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.1), 0 4px 10px rgba(0,0,0,0.6);
+      background: radial-gradient(circle at 35% 35%, #2c2c2e 0%, #1c1c1e 70%, #0c0c0e 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.1), 0 4px 12px rgba(0,0,0,0.6);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      pointer-events: none;
+      cursor: pointer;
+      z-index: 15;
     }
     .spindle-hole {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       background: #000;
       border: 2px solid #555;
       border-radius: 50%;
-      box-shadow: inset 0 0 4px #000;
+      margin: 4px 0;
+    }
+    .side-text {
+      font-size: 8px;
+      font-family: monospace;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text-sub);
     }
 
-    /* レコード上の各スロットアイコン */
+    /* アイコンスロット */
     .slot {
       position: absolute;
       top: 50%;
@@ -208,13 +277,41 @@
 </head>
 <body>
 
-  <!-- 左上：選択中アプリの巨大カード（タップで起動） -->
-  <div class="hero-app-card" id="hero-card">
-    <div class="hero-icon" id="hero-icon">📅</div>
-    <div class="hero-meta">
-      <div class="hero-title" id="hero-title">Calendar</div>
-      <div class="hero-desc" id="hero-desc">Today's Schedule</div>
-      <div class="hero-action">TAP TO OPEN ➔</div>
+  <!-- 左上：メイン情報 & インラインツール -->
+  <div class="hero-container">
+    <div class="hero-app-card" id="hero-card">
+      <div class="hero-top-row">
+        <div class="hero-icon" id="hero-icon">💬</div>
+        <div class="side-badge" id="side-indicator">SIDE A</div>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-title" id="hero-title">LINE</div>
+        <div class="hero-desc" id="hero-desc">Messages</div>
+        <div class="hero-action" id="hero-action">OPEN APP ➔</div>
+      </div>
+    </div>
+
+    <!-- 即席インライン電卓（Calculator選択時に自動出現） -->
+    <div class="mini-tool-panel" id="inline-calc">
+      <div class="calc-screen" id="calc-val">0</div>
+      <div class="calc-grid">
+        <button class="calc-btn" onclick="calcInput('7')">7</button>
+        <button class="calc-btn" onclick="calcInput('8')">8</button>
+        <button class="calc-btn" onclick="calcInput('9')">9</button>
+        <button class="calc-btn" onclick="calcInput('/')" style="color:var(--accent)">÷</button>
+        <button class="calc-btn" onclick="calcInput('4')">4</button>
+        <button class="calc-btn" onclick="calcInput('5')">5</button>
+        <button class="calc-btn" onclick="calcInput('6')">6</button>
+        <button class="calc-btn" onclick="calcInput('*')" style="color:var(--accent)">×</button>
+        <button class="calc-btn" onclick="calcInput('1')">1</button>
+        <button class="calc-btn" onclick="calcInput('2')">2</button>
+        <button class="calc-btn" onclick="calcInput('3')">3</button>
+        <button class="calc-btn" onclick="calcInput('-')" style="color:var(--accent)">-</button>
+        <button class="calc-btn" onclick="calcClear()" style="color:var(--accent)">C</button>
+        <button class="calc-btn" onclick="calcInput('0')">0</button>
+        <button class="calc-btn" onclick="calcEval()" style="background:var(--accent);color:#fff">=</button>
+        <button class="calc-btn" onclick="calcInput('+')" style="color:var(--accent)">+</button>
+      </div>
     </div>
   </div>
 
@@ -222,67 +319,95 @@
   <div class="deck-container">
     <div class="stylus-needle"></div>
     <div class="vinyl" id="vinyl">
-      <div class="center-label">
+      <!-- センターラベル（タップでSIDE A/Bを切り替え） -->
+      <div class="center-label" id="center-label">
+        <span class="side-text" id="label-top">FLIP</span>
         <div class="spindle-hole"></div>
+        <span class="side-text" id="label-bottom">SIDE A</span>
       </div>
     </div>
   </div>
 
   <script>
-    const APPS = [
-      { name: "Calendar", icon: "📅", desc: "Schedule", url: "content://com.android.calendar/time/" },
-      { name: "Spotify", icon: "🎵", desc: "Music", url: "spotify://", fallback: "https://open.spotify.com" },
-      { name: "Camera", icon: "📷", desc: "Photo / Video", url: "intent:#Intent;action=android.media.action.STILL_IMAGE_CAMERA;end" },
-      { name: "Timer", icon: "⏱️", desc: "Clock & Timer", url: "intent:#Intent;action=android.intent.action.SET_TIMER;end" },
-      { name: "Settings", icon: "⚙️", desc: "System Config", url: "intent:#Intent;action=android.settings.SETTINGS;end" },
-      { name: "Recorder", icon: "🎙️", desc: "Voice Memo", url: "intent:#Intent;action=android.provider.MediaStore.RECORD_SOUND;end" },
-      { name: "Weather", icon: "🌤️", desc: "Forecast", url: "https://weather.google.com" },
-      { name: "Memo", icon: "📝", desc: "Notes", url: "intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_NOTES;end" }
-    ];
+    // SIDE A: デイリーアプリ / SIDE B: クイックツール・ユーティリティ
+    const SIDES = {
+      A: [
+        { name: "LINE", icon: "💬", desc: "Chats", url: "line://" },
+        { name: "Maps", icon: "🗺️", desc: "Navigation", url: "intent:#Intent;action=android.intent.action.VIEW;data=geo:0,0;end" },
+        { name: "Spotify", icon: "🎵", desc: "Music", url: "spotify://", fallback: "https://open.spotify.com" },
+        { name: "Camera", icon: "📷", desc: "Quick Lens", url: "intent:#Intent;action=android.media.action.STILL_IMAGE_CAMERA;end" },
+        { name: "YouTube", icon: "▶️", desc: "Videos", url: "vnd.youtube://" },
+        { name: "X", icon: "𝕏", desc: "Feed", url: "twitter://" },
+        { name: "Calendar", icon: "📅", desc: "Schedule", url: "content://com.android.calendar/time/" },
+        { name: "Pay", icon: "💳", desc: "Wallet", url: "intent:#Intent;action=android.intent.action.VIEW;data=https://pay.google.com;end" }
+      ],
+      B: [
+        { name: "Calculator", icon: "🔢", desc: "Cover Calc", isMiniTool: true },
+        { name: "Timer", icon: "⏱️", desc: "Clock & Timer", url: "intent:#Intent;action=android.intent.action.SET_TIMER;end" },
+        { name: "Recorder", icon: "🎙️", desc: "Voice Memo", url: "intent:#Intent;action=android.provider.MediaStore.RECORD_SOUND;end" },
+        { name: "Weather", icon: "🌤️", desc: "Forecast", url: "https://weather.google.com" },
+        { name: "Settings", icon: "⚙️", desc: "Config", url: "intent:#Intent;action=android.settings.SETTINGS;end" },
+        { name: "Phone", icon: "📞", desc: "Keypad", url: "tel:" },
+        { name: "Notes", icon: "📝", desc: "Quick Memo", url: "intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_NOTES;end" },
+        { name: "Search", icon: "🔍", desc: "Google Web", url: "https://www.google.com" }
+      ]
+    };
 
+    let currentSide = 'A';
+    let currentApps = SIDES[currentSide];
     const vinyl = document.getElementById('vinyl');
     const heroCard = document.getElementById('hero-card');
     const heroIcon = document.getElementById('hero-icon');
     const heroTitle = document.getElementById('hero-title');
     const heroDesc = document.getElementById('hero-desc');
+    const heroAction = document.getElementById('hero-action');
+    const sideIndicator = document.getElementById('side-indicator');
+    const labelBottom = document.getElementById('label-bottom');
+    const inlineCalc = document.getElementById('inline-calc');
 
-    const radius = 114; // レコード拡大に伴うアイコン配置半径
-    const totalSlots = APPS.length;
+    const radius = 118;
+    const totalSlots = 8;
     const stepAngle = 360 / totalSlots;
 
-    // スロットアイコン配置
-    APPS.forEach((app, i) => {
-      const angle = (i * stepAngle - 90) * (Math.PI / 180);
-      const x = Math.round(radius * Math.cos(angle));
-      const y = Math.round(radius * Math.sin(angle));
-      const el = document.createElement('div');
-      el.className = 'slot';
-      el.textContent = app.icon;
-      el.style.transform = `translate(${x}px, ${y}px)`;
-      vinyl.appendChild(el);
-    });
+    // スロットの描画更新
+    function renderSlots() {
+      // 既存スロット削除
+      const oldSlots = vinyl.querySelectorAll('.slot');
+      oldSlots.forEach(s => s.remove());
 
-    // Web Audio API によるカチカチ触覚音
+      currentApps.forEach((app, i) => {
+        const angle = (i * stepAngle - 90) * (Math.PI / 180);
+        const x = Math.round(radius * Math.cos(angle));
+        const y = Math.round(radius * Math.sin(angle));
+        const el = document.createElement('div');
+        el.className = 'slot';
+        el.textContent = app.icon;
+        el.style.transform = `translate(${x}px, ${y}px)`;
+        vinyl.appendChild(el);
+      });
+    }
+
+    // Web Audio API カチカチ触覚音
     let audioCtx = null;
-    function playClickSound() {
+    function playClick() {
       try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1800, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.025);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.02);
         gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.005, audioCtx.currentTime + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.02);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.03);
+        osc.stop(audioCtx.currentTime + 0.025);
       } catch (e) {}
     }
 
-    // 回転制御
+    // 回転・スナップ
     let currentAngle = 0;
     let startAngle = 0;
     let baseAngle = 0;
@@ -298,17 +423,25 @@
     }
 
     function updateActiveApp() {
-      // 針の位置（左上寄り約-135度付近）に対応するインデックスを計算
       let norm = ((-currentAngle) % 360 + 360) % 360;
       let idx = Math.round(norm / stepAngle) % totalSlots;
       if (idx !== activeIndex) {
         activeIndex = idx;
-        const app = APPS[activeIndex];
+        const app = currentApps[activeIndex];
         heroIcon.textContent = app.icon;
         heroTitle.textContent = app.name;
         heroDesc.textContent = app.desc;
-        playClickSound();
-        if (navigator.vibrate) navigator.vibrate(10);
+
+        if (app.isMiniTool) {
+          heroAction.textContent = "ACTIVE IN COVER ➔";
+          inlineCalc.classList.add('active');
+        } else {
+          heroAction.textContent = "OPEN APP ➔";
+          inlineCalc.classList.remove('active');
+        }
+
+        playClick();
+        if (navigator.vibrate) navigator.vibrate(8);
       }
     }
 
@@ -329,7 +462,6 @@
     function onEnd() {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onEnd);
-      // 最近傍のスロットへピタッとスナップ
       currentAngle = Math.round(currentAngle / stepAngle) * stepAngle;
       vinyl.style.transition = 'transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1)';
       vinyl.style.transform = `rotate(${currentAngle}deg)`;
@@ -339,15 +471,63 @@
 
     vinyl.addEventListener('pointerdown', onStart);
 
-    // 左上カードタップでアプリ起動
+    // センターラベルタップ：SIDE A / SIDE B の反転切り替え
+    document.getElementById('center-label').addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentSide = currentSide === 'A' ? 'B' : 'A';
+      currentApps = SIDES[currentSide];
+      sideIndicator.textContent = `SIDE ${currentSide}`;
+      labelBottom.textContent = `SIDE ${currentSide}`;
+
+      // フリップアニメーション
+      vinyl.style.transition = 'transform 0.4s ease';
+      currentAngle += 180;
+      vinyl.style.transform = `rotate(${currentAngle}deg) scale(0.92)`;
+      setTimeout(() => {
+        renderSlots();
+        vinyl.style.transform = `rotate(${currentAngle}deg) scale(1)`;
+        updateActiveApp();
+      }, 200);
+      if (navigator.vibrate) navigator.vibrate([15, 50, 15]);
+    });
+
+    // メインカードタップで起動
     heroCard.addEventListener('click', () => {
-      const app = APPS[activeIndex];
+      const app = currentApps[activeIndex];
+      if (app.isMiniTool) return;
       if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
       window.location.href = app.url;
       if (app.fallback) {
         setTimeout(() => { window.location.href = app.fallback; }, 800);
       }
     });
+
+    // カバー画面インライン電卓ロジック
+    let calcExp = "";
+    window.calcInput = function(char) {
+      if (calcExp === "0") calcExp = "";
+      calcExp += char;
+      document.getElementById('calc-val').textContent = calcExp;
+      if (navigator.vibrate) navigator.vibrate(5);
+    };
+    window.calcClear = function() {
+      calcExp = "";
+      document.getElementById('calc-val').textContent = "0";
+    };
+    window.calcEval = function() {
+      try {
+        const res = Function('"use strict";return (' + calcExp + ')')();
+        calcExp = String(res);
+        document.getElementById('calc-val').textContent = calcExp;
+      } catch(e) {
+        document.getElementById('calc-val').textContent = "Err";
+        calcExp = "";
+      }
+      if (navigator.vibrate) navigator.vibrate(10);
+    };
+
+    renderSlots();
+    updateActiveApp();
   </script>
 </body>
 </html>
