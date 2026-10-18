@@ -391,7 +391,8 @@
       // { name: "LINE", icon: "💬", desc: "Messages", url: "intent://#Intent;package=jp.naver.line.android;scheme=line;end" },
       // { name: "LINE", icon: "💬", desc: "Messages", url: "intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=jp.naver.line.android;end" },
       // { name: "LINE", icon: "💬", desc: "Messages", url: "line://nv/chat" },
-      { name: "LINE", icon: "💬", desc: "Messages", url: "https://line.me/R/msg/text/?" },
+      // { name: "LINE", icon: "💬", desc: "Messages", url: "https://line.me/R/msg/text/?" },
+      { name: "LINE", icon: "💬", desc: "Messages", url: "intent:#Intent;action=android.intent.action.VIEW;data=https://line.me/R/nv/chat;package=jp.naver.line.android;end" },
       // { name: "LINE", icon: "💬", desc: "Messages", url: "intent://line/#Intent;scheme=line;package=jp.naver.line.android;end" },
       // { name: "LINE", icon: "💬", desc: "Messages", url: "https://line.me/R/" },
       { name: "Maps", icon: "🗺️", desc: "Navigation", url: "intent:#Intent;action=android.intent.action.VIEW;data=geo:0,0;end" },
@@ -508,14 +509,8 @@
       if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
       if (!app.url) return;
 
-      // 新規タブ/外部アプリハンドラ経由で安全に開く
-      const link = document.createElement('a');
-      link.href = app.url;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // intentスキームを直接実行してOS側へ引き渡す
+      window.location.href = app.url;
     });
   </script>
 </body>
