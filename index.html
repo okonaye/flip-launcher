@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Flip Vinyl Launcher</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card-bg: #f7f7f5;
+      --border: #e0e0de;
+      --text-main: #37352f;
+      --text-sub: #787774;
+      --vinyl-base: #191919;
+      --vinyl-groove: #2b2b2b;
+      --label-bg: #f1f1ef;
+      --accent: #2e78d2;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #191919;
+        --card-bg: #202020;
+        --border: #2f2f2f;
+        --text-main: #ffffff;
+        --text-sub: #9b9a97;
+        --vinyl-base: #111111;
+        --vinyl-groove: #222222;
+        --label-bg: #2b2b2b;
+      }
+    }
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100vh;
+      padding: 12px 14px 18px 14px;
+    }
+    /* Notion風ステータス・ヘッダー */
+    .header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-sub);
+      font-family: monospace;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 6px;
+    }
+    /* アプリ情報カード */
+    .info-card {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .info-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .info-icon {
+      font-size: 24px;
+    }
+    .info-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .info-sub {
+      font-size: 10px;
+      color: var(--text-sub);
+    }
+    .open-btn {
+      background: var(--text-main);
+      color: var(--bg);
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .open-btn:active {
+      transform: scale(0.96);
+    }
+    /* レコード盤コンテナ */
+    .deck-container {
+      position: relative;
+      width: 250px;
+      height: 250px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      touch-action: none;
+    }
+    /* トーンアーム（針） */
+    .needle-indicator {
+      position: absolute;
+      top: -6px;
+      width: 3px;
+      height: 28px;
+      background: #eb5757;
+      border-radius: 2px;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .needle-indicator::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: -2px;
+      border-left: 3.5px solid transparent;
+      border-right: 3.5px solid transparent;
+      border-top: 5px solid #eb5757;
+    }
+    /* レコード盤 */
+    .vinyl {
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle,
+        var(--vinyl-base) 0%,
+        var(--vinyl-groove) 25%,
+        var(--vinyl-base) 28%,
+        var(--vinyl-groove) 55%,
+        var(--vinyl-base) 58%,
+        var(--vinyl-groove) 85%,
+        var(--vinyl-base) 88%
+      );
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18), inset 0 0 10px rgba(0,0,0,0.8);
+      position: relative;
+      cursor: grab;
+      border: 2px solid var(--border);
+    }
+    .vinyl:active {
+      cursor: grabbing;
+    }
+    /* センターラベル（Notion風） */
+    .label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 82px;
+      height: 82px;
+      background: var(--label-bg);
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-family: monospace;
+      color: var(--text-sub);
+      pointer-events: none;
+    }
+    .spindle-hole {
+      width: 12px;
+      height: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      margin-top: 4px;
+    }
+    /* レコード上のアプリアイコン */
+    .slot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 32px;
+      height: 32px;
+      margin-left: -16px;
+      margin-top: -16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      pointer-events: none;
+    }
+    .footer-note {
+      font-size: 10px;
+      color: var(--text-sub);
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <span id="clock">12:00</span>
+    <span>FLIP // COVER</span>
+    <span>33 RPM</span>
+  </div>
+
+  <div class="info-card">
+    <div class="info-left">
+      <div class="info-icon" id="card-icon">🎵</div>
+      <div>
+        <div class="info-title" id="card-title">Spotify</div>
+        <div class="info-sub" id="card-sub">Tap or press OPEN</div>
+      </div>
+    </div>
+    <button class="open-btn" id="open-btn">OPEN</button>
+  </div>
+
+  <div class="deck-container">
+    <div class="needle-indicator"></div>
+    <div class="vinyl" id="vinyl">
+      <div class="label">
+        <span>NOTION</span>
+        <div class="spindle-hole"></div>
+        <span style="margin-top:4px;">SIDE A</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">✦ Swipe Vinyl to Select ✦</div>
+
+  <script>
+    // 時計更新
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${h}:${m}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 登録アプリ設定（ディープリンクURI / Fallback URL）
+    const APPS = [
+      { name: "Spotify", icon: "🎵", desc: "Music Player", url: "spotify://", fallback: "https://open.spotify.com" },
+      { name: "Camera", icon: "📷", desc: "Cover Lens", url: "intent:#Intent;action=android.media.action.STILL_IMAGE_CAMERA;end" },
+      { name: "Notion", icon: "📝", desc: "Quick Memo", url: "notion://", fallback: "https://www.notion.so" },
+      { name: "Calendar", icon: "📅", desc: "Today's Schedule", url: "content://com.android.calendar/time/" },
+      { name: "Timer", icon: "⏱️", desc: "Stopwatch & Timer", url: "intent:#Intent;action=android.intent.action.SET_TIMER;end" },
+      { name: "Weather", icon: "🌤️", desc: "Local Forecast", url: "https://weather.google.com" },
+      { name: "Recorder", icon: "🎙️", desc: "Voice Memo", url: "intent:#Intent;action=android.provider.MediaStore.RECORD_SOUND;end" },
+      { name: "Settings", icon: "⚙️", desc: "System Config", url: "intent:#Intent;action=android.settings.SETTINGS;end" }
+    ];
+
+    const vinyl = document.getElementById('vinyl');
+    const radius = 86; // アイコン配置半径
+    const totalSlots = APPS.length;
+    const stepAngle = 360 / totalSlots;
+
+    // スロット配置
+    APPS.forEach((app, i) => {
+      const angle = (i * stepAngle - 90) * (Math.PI / 180);
+      const x = Math.round(radius * Math.cos(angle));
+      const y = Math.round(radius * Math.sin(angle));
+      const el = document.createElement('div');
+      el.className = 'slot';
+      el.textContent = app.icon;
+      el.style.transform = `translate(${x}px, ${y}px)`;
+      vinyl.appendChild(el);
+    });
+
+    // Web Audio API によるカチカチ音
+    let audioCtx = null;
+    function playClick() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.02);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.02);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.025);
+      } catch (e) {}
+    }
+
+    // 回転・ジェスチャー制御
+    let currentAngle = 0;
+    let startAngle = 0;
+    let baseAngle = 0;
+    let activeIndex = 0;
+    let lastSnapIndex = 0;
+
+    function getAngle(e) {
+      const rect = vinyl.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return Math.atan2(clientY - cy, clientX - cx) * (180 / Math.PI);
+    }
+
+    function updateActiveApp() {
+      // 12時（針）位置の判定
+      let norm = ((-currentAngle) % 360 + 360) % 360;
+      let idx = Math.round(norm / stepAngle) % totalSlots;
+      if (idx !== activeIndex) {
+        activeIndex = idx;
+        const app = APPS[activeIndex];
+        document.getElementById('card-icon').textContent = app.icon;
+        document.getElementById('card-title').textContent = app.name;
+        document.getElementById('card-sub').textContent = app.desc;
+        playClick();
+        if (navigator.vibrate) navigator.vibrate(8);
+      }
+    }
+
+    function onStart(e) {
+      startAngle = getAngle(e);
+      baseAngle = currentAngle;
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onEnd);
+    }
+
+    function onMove(e) {
+      const angle = getAngle(e);
+      currentAngle = baseAngle + (angle - startAngle);
+      vinyl.style.transform = `rotate(${currentAngle}deg)`;
+      updateActiveApp();
+    }
+
+    function onEnd() {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onEnd);
+      // 最近傍のスロットへスナップ
+      let norm = ((-currentAngle) % 360 + 360) % 360;
+      let targetIdx = Math.round(norm / stepAngle) % totalSlots;
+      let targetAngle = -targetIdx * stepAngle;
+      
+      // 最短回転方向を維持してスムーズに固定
+      currentAngle = Math.round(currentAngle / stepAngle) * stepAngle;
+      vinyl.style.transition = 'transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1)';
+      vinyl.style.transform = `rotate(${currentAngle}deg)`;
+      setTimeout(() => { vinyl.style.transition = ''; }, 200);
+      updateActiveApp();
+    }
+
+    vinyl.addEventListener('pointerdown', onStart);
+
+    // アプリ起動処理
+    function openApp() {
+      const app = APPS[activeIndex];
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      window.location.href = app.url;
+      if (app.fallback) {
+        setTimeout(() => { window.location.href = app.fallback; }, 800);
+      }
+    }
+    document.getElementById('open-btn').addEventListener('click', openApp);
+  </script>
+</body>
+</html>
