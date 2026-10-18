@@ -3,31 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Flip Vinyl Launcher</title>
+  <title>Flip Vinyl</title>
   <link rel="manifest" href="manifest.json">
   <style>
     :root {
-      --bg: #ffffff;
-      --card-bg: #f7f7f5;
-      --border: #e0e0de;
-      --text-main: #37352f;
-      --text-sub: #787774;
-      --vinyl-base: #191919;
-      --vinyl-groove: #2b2b2b;
-      --label-bg: #f1f1ef;
-      --accent: #2e78d2;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #191919;
-        --card-bg: #202020;
-        --border: #2f2f2f;
-        --text-main: #ffffff;
-        --text-sub: #9b9a97;
-        --vinyl-base: #111111;
-        --vinyl-groove: #222222;
-        --label-bg: #2b2b2b;
-      }
+      --bg: #121212;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.12);
+      --text-main: #f5f5f7;
+      --text-sub: #86868b;
+      --accent-red: #ff453a;
     }
     * {
       box-sizing: border-box;
@@ -39,232 +24,233 @@
     body {
       background-color: var(--bg);
       color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
       overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    /* 左上：メインのアクティブアプリ表示カード（タップで起動） */
+    .hero-app-card {
+      position: absolute;
+      top: 18px;
+      left: 18px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      height: 100vh;
-      padding: 12px 14px 18px 14px;
-    }
-    /* Notion風ステータス・ヘッダー */
-    .header {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 11px;
-      color: var(--text-sub);
-      font-family: monospace;
-      border-bottom: 1px dashed var(--border);
-      padding-bottom: 6px;
-    }
-    /* アプリ情報カード */
-    .info-card {
-      width: 100%;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-    }
-    .info-left {
-      display: flex;
-      align-items: center;
       gap: 10px;
-    }
-    .info-icon {
-      font-size: 24px;
-    }
-    .info-title {
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .info-sub {
-      font-size: 10px;
-      color: var(--text-sub);
-    }
-    .open-btn {
-      background: var(--text-main);
-      color: var(--bg);
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 11px;
-      font-weight: 600;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px 18px;
+      width: 170px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       cursor: pointer;
+      z-index: 20;
+      transition: transform 0.1s ease, background 0.2s ease;
     }
-    .open-btn:active {
+    .hero-app-card:active {
       transform: scale(0.96);
+      background: rgba(255, 255, 255, 0.1);
     }
-    /* レコード盤コンテナ */
-    .deck-container {
-      position: relative;
-      width: 250px;
-      height: 250px;
+    .hero-icon {
+      font-size: 54px;
+      line-height: 1;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+    }
+    .hero-meta {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+    }
+    .hero-title {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hero-desc {
+      font-size: 11px;
+      color: var(--text-sub);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+    .hero-action {
+      display: inline-flex;
       align-items: center;
-      touch-action: none;
+      gap: 4px;
+      font-size: 10px;
+      font-family: monospace;
+      color: var(--accent-red);
+      font-weight: 600;
+      margin-top: 6px;
+      letter-spacing: 0.5px;
     }
-    /* トーンアーム（針） */
-    .needle-indicator {
+
+    /* 右下：巨大レコード盤コンテナ */
+    .deck-container {
       position: absolute;
-      top: -6px;
-      width: 3px;
-      height: 28px;
-      background: #eb5757;
-      border-radius: 2px;
+      bottom: -65px;
+      right: -65px;
+      width: 340px;
+      height: 340px;
+      touch-action: none;
       z-index: 10;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
-    .needle-indicator::after {
+
+    /* 針（トーンアーム・インジケーター） */
+    .stylus-needle {
+      position: absolute;
+      top: -12px;
+      left: 70px;
+      width: 4px;
+      height: 38px;
+      background: linear-gradient(180deg, #d1d1d6 0%, #ff453a 80%);
+      border-radius: 2px;
+      z-index: 25;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+      pointer-events: none;
+    }
+    .stylus-needle::after {
       content: "";
       position: absolute;
-      bottom: -4px;
-      left: -2px;
-      border-left: 3.5px solid transparent;
-      border-right: 3.5px solid transparent;
-      border-top: 5px solid #eb5757;
-    }
-    /* レコード盤 */
-    .vinyl {
-      width: 240px;
-      height: 240px;
+      bottom: -6px;
+      left: -3px;
+      width: 10px;
+      height: 10px;
+      background: #ff453a;
       border-radius: 50%;
-      background: radial-gradient(
-        circle,
-        var(--vinyl-base) 0%,
-        var(--vinyl-groove) 25%,
-        var(--vinyl-base) 28%,
-        var(--vinyl-groove) 55%,
-        var(--vinyl-base) 58%,
-        var(--vinyl-groove) 85%,
-        var(--vinyl-base) 88%
-      );
-      box-shadow: 0 8px 24px rgba(0,0,0,0.18), inset 0 0 10px rgba(0,0,0,0.8);
+      box-shadow: 0 0 8px #ff453a;
+    }
+
+    /* リアルなビニールレコード盤 */
+    .vinyl {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background:
+        /* 艶やかな光沢反射 */
+        conic-gradient(
+          from 45deg,
+          rgba(255, 255, 255, 0.08) 0deg,
+          transparent 60deg,
+          rgba(255, 255, 255, 0.12) 120deg,
+          transparent 180deg,
+          rgba(255, 255, 255, 0.08) 240deg,
+          transparent 300deg,
+          rgba(255, 255, 255, 0.12) 360deg
+        ),
+        /* 高精細なレコード溝（グルーヴ） */
+        repeating-radial-gradient(
+          circle at center,
+          #111111 0px,
+          #111111 2px,
+          #1a1a1a 3px,
+          #151515 4px
+        );
+      box-shadow: 
+        0 14px 40px rgba(0, 0, 0, 0.9),
+        inset 0 0 15px rgba(0, 0, 0, 0.95),
+        inset 0 0 0 2px rgba(255, 255, 255, 0.08);
       position: relative;
       cursor: grab;
-      border: 2px solid var(--border);
     }
     .vinyl:active {
       cursor: grabbing;
     }
-    /* センターラベル（Notion風） */
-    .label {
+
+    /* センターラベル（文字なし・メタリックスピンドル） */
+    .center-label {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 82px;
-      height: 82px;
-      background: var(--label-bg);
+      width: 110px;
+      height: 110px;
       border-radius: 50%;
-      border: 1px solid var(--border);
+      background: radial-gradient(circle at 35% 35%, #2a2a2e 0%, #1c1c1e 70%, #0e0e10 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.1), 0 4px 10px rgba(0,0,0,0.6);
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 8px;
-      font-family: monospace;
-      color: var(--text-sub);
       pointer-events: none;
     }
     .spindle-hole {
-      width: 12px;
-      height: 12px;
-      background: var(--bg);
-      border: 1px solid var(--border);
+      width: 16px;
+      height: 16px;
+      background: #000;
+      border: 2px solid #555;
       border-radius: 50%;
-      margin-top: 4px;
+      box-shadow: inset 0 0 4px #000;
     }
-    /* レコード上のアプリアイコン */
+
+    /* レコード上の各スロットアイコン */
     .slot {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 32px;
-      height: 32px;
-      margin-left: -16px;
-      margin-top: -16px;
+      width: 44px;
+      height: 44px;
+      margin-left: -22px;
+      margin-top: -22px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 18px;
+      font-size: 26px;
       pointer-events: none;
-    }
-    .footer-note {
-      font-size: 10px;
-      color: var(--text-sub);
-      font-family: monospace;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
     }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <span id="clock">12:00</span>
-    <span>FLIP // COVER</span>
-    <span>33 RPM</span>
-  </div>
-
-  <div class="info-card">
-    <div class="info-left">
-      <div class="info-icon" id="card-icon">🎵</div>
-      <div>
-        <div class="info-title" id="card-title">Spotify</div>
-        <div class="info-sub" id="card-sub">Tap or press OPEN</div>
-      </div>
+  <!-- 左上：選択中アプリの巨大カード（タップで起動） -->
+  <div class="hero-app-card" id="hero-card">
+    <div class="hero-icon" id="hero-icon">📅</div>
+    <div class="hero-meta">
+      <div class="hero-title" id="hero-title">Calendar</div>
+      <div class="hero-desc" id="hero-desc">Today's Schedule</div>
+      <div class="hero-action">TAP TO OPEN ➔</div>
     </div>
-    <button class="open-btn" id="open-btn">OPEN</button>
   </div>
 
+  <!-- 右下：レコード盤 -->
   <div class="deck-container">
-    <div class="needle-indicator"></div>
+    <div class="stylus-needle"></div>
     <div class="vinyl" id="vinyl">
-      <div class="label">
-        <span>NOTION</span>
+      <div class="center-label">
         <div class="spindle-hole"></div>
-        <span style="margin-top:4px;">SIDE A</span>
       </div>
     </div>
   </div>
-
-  <div class="footer-note">✦ Swipe Vinyl to Select ✦</div>
 
   <script>
-    // 時計更新
-    function updateClock() {
-      const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('clock').textContent = `${h}:${m}`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // 登録アプリ設定（ディープリンクURI / Fallback URL）
     const APPS = [
-      { name: "Spotify", icon: "🎵", desc: "Music Player", url: "spotify://", fallback: "https://open.spotify.com" },
-      { name: "Camera", icon: "📷", desc: "Cover Lens", url: "intent:#Intent;action=android.media.action.STILL_IMAGE_CAMERA;end" },
-      { name: "Notion", icon: "📝", desc: "Quick Memo", url: "notion://", fallback: "https://www.notion.so" },
-      { name: "Calendar", icon: "📅", desc: "Today's Schedule", url: "content://com.android.calendar/time/" },
-      { name: "Timer", icon: "⏱️", desc: "Stopwatch & Timer", url: "intent:#Intent;action=android.intent.action.SET_TIMER;end" },
-      { name: "Weather", icon: "🌤️", desc: "Local Forecast", url: "https://weather.google.com" },
+      { name: "Calendar", icon: "📅", desc: "Schedule", url: "content://com.android.calendar/time/" },
+      { name: "Spotify", icon: "🎵", desc: "Music", url: "spotify://", fallback: "https://open.spotify.com" },
+      { name: "Camera", icon: "📷", desc: "Photo / Video", url: "intent:#Intent;action=android.media.action.STILL_IMAGE_CAMERA;end" },
+      { name: "Timer", icon: "⏱️", desc: "Clock & Timer", url: "intent:#Intent;action=android.intent.action.SET_TIMER;end" },
+      { name: "Settings", icon: "⚙️", desc: "System Config", url: "intent:#Intent;action=android.settings.SETTINGS;end" },
       { name: "Recorder", icon: "🎙️", desc: "Voice Memo", url: "intent:#Intent;action=android.provider.MediaStore.RECORD_SOUND;end" },
-      { name: "Settings", icon: "⚙️", desc: "System Config", url: "intent:#Intent;action=android.settings.SETTINGS;end" }
+      { name: "Weather", icon: "🌤️", desc: "Forecast", url: "https://weather.google.com" },
+      { name: "Memo", icon: "📝", desc: "Notes", url: "intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_NOTES;end" }
     ];
 
     const vinyl = document.getElementById('vinyl');
-    const radius = 86; // アイコン配置半径
+    const heroCard = document.getElementById('hero-card');
+    const heroIcon = document.getElementById('hero-icon');
+    const heroTitle = document.getElementById('hero-title');
+    const heroDesc = document.getElementById('hero-desc');
+
+    const radius = 114; // レコード拡大に伴うアイコン配置半径
     const totalSlots = APPS.length;
     const stepAngle = 360 / totalSlots;
 
-    // スロット配置
+    // スロットアイコン配置
     APPS.forEach((app, i) => {
       const angle = (i * stepAngle - 90) * (Math.PI / 180);
       const x = Math.round(radius * Math.cos(angle));
@@ -276,32 +262,31 @@
       vinyl.appendChild(el);
     });
 
-    // Web Audio API によるカチカチ音
+    // Web Audio API によるカチカチ触覚音
     let audioCtx = null;
-    function playClick() {
+    function playClickSound() {
       try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.02);
-        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.02);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1800, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.025);
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.005, audioCtx.currentTime + 0.025);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.025);
+        osc.stop(audioCtx.currentTime + 0.03);
       } catch (e) {}
     }
 
-    // 回転・ジェスチャー制御
+    // 回転制御
     let currentAngle = 0;
     let startAngle = 0;
     let baseAngle = 0;
     let activeIndex = 0;
-    let lastSnapIndex = 0;
 
     function getAngle(e) {
       const rect = vinyl.getBoundingClientRect();
@@ -313,17 +298,17 @@
     }
 
     function updateActiveApp() {
-      // 12時（針）位置の判定
+      // 針の位置（左上寄り約-135度付近）に対応するインデックスを計算
       let norm = ((-currentAngle) % 360 + 360) % 360;
       let idx = Math.round(norm / stepAngle) % totalSlots;
       if (idx !== activeIndex) {
         activeIndex = idx;
         const app = APPS[activeIndex];
-        document.getElementById('card-icon').textContent = app.icon;
-        document.getElementById('card-title').textContent = app.name;
-        document.getElementById('card-sub').textContent = app.desc;
-        playClick();
-        if (navigator.vibrate) navigator.vibrate(8);
+        heroIcon.textContent = app.icon;
+        heroTitle.textContent = app.name;
+        heroDesc.textContent = app.desc;
+        playClickSound();
+        if (navigator.vibrate) navigator.vibrate(10);
       }
     }
 
@@ -344,45 +329,25 @@
     function onEnd() {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onEnd);
-      // 最近傍のスロットへスナップ
-      let norm = ((-currentAngle) % 360 + 360) % 360;
-      let targetIdx = Math.round(norm / stepAngle) % totalSlots;
-      let targetAngle = -targetIdx * stepAngle;
-      
-      // 最短回転方向を維持してスムーズに固定
+      // 最近傍のスロットへピタッとスナップ
       currentAngle = Math.round(currentAngle / stepAngle) * stepAngle;
-      vinyl.style.transition = 'transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1)';
+      vinyl.style.transition = 'transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1)';
       vinyl.style.transform = `rotate(${currentAngle}deg)`;
-      setTimeout(() => { vinyl.style.transition = ''; }, 200);
+      setTimeout(() => { vinyl.style.transition = ''; }, 220);
       updateActiveApp();
     }
 
     vinyl.addEventListener('pointerdown', onStart);
 
-    // アプリ起動処理
-    function openApp() {
+    // 左上カードタップでアプリ起動
+    heroCard.addEventListener('click', () => {
       const app = APPS[activeIndex];
       if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
       window.location.href = app.url;
       if (app.fallback) {
         setTimeout(() => { window.location.href = app.fallback; }, 800);
       }
-    }
-    document.getElementById('open-btn').addEventListener('click', openApp);
-    // 画面タップ時にアドレスバーを隠して全画面表示にする
-    function requestCoverFullscreen() {
-      const docEl = document.documentElement;
-      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        if (docEl.requestFullscreen) {
-          docEl.requestFullscreen().catch(() => {});
-        } else if (docEl.webkitRequestFullscreen) {
-          docEl.webkitRequestFullscreen();
-        }
-      }
-    }
-    
-    // レコード盤または画面を触った瞬間に全画面化
-    window.addEventListener('pointerdown', requestCoverFullscreen, { once: true });
+    });
   </script>
 </body>
 </html>
