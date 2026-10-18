@@ -390,7 +390,8 @@
       // { name: "LINE", icon: "💬", desc: "Messages", url: "https://line.me/R/nv/chat" },
       // { name: "LINE", icon: "💬", desc: "Messages", url: "intent://#Intent;package=jp.naver.line.android;scheme=line;end" },
       // { name: "LINE", icon: "💬", desc: "Messages", url: "intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=jp.naver.line.android;end" },
-      { name: "LINE", icon: "💬", desc: "Messages", url: "https://line.me/R/" },
+      { name: "LINE", icon: "💬", desc: "Messages", url: "intent://line/#Intent;scheme=line;package=jp.naver.line.android;end" },
+      // { name: "LINE", icon: "💬", desc: "Messages", url: "https://line.me/R/" },
       { name: "Maps", icon: "🗺️", desc: "Navigation", url: "intent:#Intent;action=android.intent.action.VIEW;data=geo:0,0;end" },
       { name: "YouTube", icon: "▶️", desc: "Videos", url: "vnd.youtube://" },
       { name: "Settings", icon: "⚙️", desc: "System Config", url: "intent:#Intent;action=android.settings.SETTINGS;end" }
@@ -515,21 +516,24 @@
     //     // インテントまたはアプリURIをダイレクト起動
     //     window.location.href = app.url;
     //   }
+    // スピーカーカードをタップでアプリ起動
     speakerCard.addEventListener('click', () => {
       const app = APPS[activeIndex];
       if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
       
       if (!app.url) return;
 
-      // aタグを動的生成してネイティブクリックを発火（ブラウザのURL誤認を防止）
-      const link = document.createElement('a');
-      link.href = app.url;
-      link.rel = 'noopener noreferrer';
-      
-      // インテントや外部リンクの場合のポップアップブロック対策
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // LINEなどのインテント呼び出し
+      if (app.url.startsWith('intent:')) {
+        window.location.href = app.url;
+      } else {
+        const link = document.createElement('a');
+        link.href = app.url;
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     });
   </script>
 </body>
